@@ -1,0 +1,52 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Background Colors */
+    --bg-primary: 221 83% 60%;    /* Blue */
+    --bg-secondary: 220 20% 97%;   /* Light Gray */
+    --bg-destructive: 0 84% 60%;   /* Red */
+    --bg-success: 148 60% 45%;     /* Green */
+    --bg-warning: 40 100% 50%;     /* Yellow/Orange */
+    --bg-info: 200 100% 50%;       /* Light Blue */
+    --bg-base: 0 0% 100%;          /* White */
+
+    /* Text Colors */
+    --text-primary: 222 47% 11%;   /* Dark Blue */
+    --text-secondary: 222 47% 15%;  /* Slightly Lighter Dark Blue */
+    --text-white: 0 0% 100%;       /* White */
+
+    /* Border & Ring Colors */
+    --border-input: 220 13% 91%;   /* Light Gray */
+    --ring: 222.2 84% 4.9%;        /* Very Dark Blue */
+
+      --overlay: 0 0% 0%;
+  --dialog: var(--bg-base);
+  --dialog-foreground: var(--text-primary);
+
+  /* Dialog specific colors */
+  --dialog-overlay: hsl(var(--overlay) / 0.5);
+  --dialog-background: hsl(var(--dialog));
+  --dialog-text: hsl(var(--dialog-foreground));
+  --dialog-border: hsl(var(--border));
+  --dialog-description: hsl(var(--text-secondary));
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+      'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--bg-base));
+    color: hsl(var(--text-primary));
+  }
+
+  code {
+    font-family: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+}
