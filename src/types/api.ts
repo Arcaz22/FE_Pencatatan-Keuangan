@@ -1,12 +1,36 @@
 export type BaseEntity = {
   id: string;
-  createdAt: number;
+  createdAt?: number | null;
+  updatedAt?: number | null;
+  deletedAt?: number | null;
 };
 
-export type User = {
-  id: string;
-  email: string;
+export type Entity<T> = {
+  [K in keyof T]: T[K];
+} & BaseEntity;
+
+export type Meta = {
+  current_page: number;
+  per_page: number;
+  total_pages: number;
+  total_records: number;
+};
+
+export type ApiResponse<T> = {
+  message: string;
+  data: T;
+  pagination?: Meta;
+};
+
+export type User = Entity<{
   name: string;
+  email: string;
+}>;
+
+export type RegisterInput = {
+  email: string;
+  password: string;
+  confirm_password: string;
 };
 
 export type LoginInput = {
@@ -14,13 +38,8 @@ export type LoginInput = {
   password: string;
 };
 
-export type RegisterInput = {
-  email: string;
-  password: string;
-  name: string;
-};
-
 export type AuthResponse = {
+  message: string;
   user: User;
 };
 

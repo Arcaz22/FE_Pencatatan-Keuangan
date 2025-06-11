@@ -1,12 +1,16 @@
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { AuthProvider } from '@/lib/auth';
+import { GlobalNotification } from '@/components/ui/notification';
 
 function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <>
+      <GlobalNotification />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </>
   );
 }
 
