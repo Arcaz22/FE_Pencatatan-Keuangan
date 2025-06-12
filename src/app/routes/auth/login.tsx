@@ -1,33 +1,36 @@
-import { AuthLayout } from '@/components/layout/auth-layout';
-import { LoginForm } from '../../../features/auth/login-form';
-import { paths } from '@/config/paths';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/lib/auth';
-import { useState } from 'react';
-
-type LoginValues = {
-  email: string;
-  password: string;
-};
+import { useAppDispatch, useAppSelector } from '@/stores/hooks';
+import { login } from '@/stores/slices/authSlice';
+import { showNotification } from '@/stores/slices/notificationSlice';
+import { LoginForm } from '@/features/auth/login-form';
+import { AuthLayout } from '@/components/layout/auth-layout';
+import { paths } from '@/config/paths';
+import type { LoginInput } from '@/types/api';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.auth);
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') ?? paths.app.dashboard.path;
 
-  const handleSubmit = async (values: LoginValues) => {
+  const handleSubmit = async (values: LoginInput) => {
     try {
-      setIsLoading(true);
-      setError('');
-      await login(values.email, values.password);
+      const result = await dispatch(login(values)).unwrap();
+      dispatch(
+        showNotification({
+          message: result.message,
+          type: 'success'
+        })
+      );
       navigate(redirectTo);
-    } catch {
-      setError('Email atau password salah');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      dispatch(
+        showNotification({
+          message: error as string,
+          type: 'error'
+        })
+      );
     }
   };
 
@@ -36,9 +39,8 @@ export const LoginPage = () => {
       title="Selamat Datang Kembali"
       subtitle="Masuk untuk melanjutkan"
       linkText="Belum punya akun? Daftar disini"
-      linkHref="/signup"
+      linkHref={paths.auth.signup.path}
     >
-      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
       <LoginForm onSubmit={handleSubmit} isLoading={isLoading} />
     </AuthLayout>
   );

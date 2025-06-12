@@ -1,59 +1,38 @@
-import { AuthResponse, LoginInput, RegisterInput, User } from '@/types/api';
+import {
+  ApiResponse,
+  LoginInput,
+  RegisterInput,
+  User,
+  LoginValues,
+  RegisterValues
+} from '@/types/api';
 import { env } from '@/config/env';
 
 const API_URL = env.apiUrl;
 
-// const mockUser: User = {
-//   id: '1',
-//   email: 'user@example.com',
-//   name: 'Test User'
-// };
+export const getToken = () => localStorage.getItem('auth_token');
 
-// type ApiResponse<T> = { data: T };
+export const setToken = (token: string) => {
+  localStorage.setItem('auth_token', token);
+};
 
-// export const api = {
-//   get: async (url: string): Promise<ApiResponse<User>> => {
-//     // Log URL to avoid unused parameter warning
-//     console.log('GET request to:', url);
-//     return {
-//       data: mockUser
-//     };
-//   },
-//   post: async <T>(url: string, data?: unknown): Promise<ApiResponse<T>> => {
-//     console.log('POST request to:', url, 'with data:', data);
-//     return {
-//       data: { user: mockUser } as T
-//     };
-//   }
-// };
-
-// export const authApi = {
-//   getUser: async (): Promise<User> => {
-//     const response = await api.get('/auth/me');
-//     return response.data;
-//   },
-
-//   login: async (data: LoginInput): Promise<AuthResponse> => {
-//     const response = await api.post<AuthResponse>('/auth/login', data);
-//     return response.data;
-//   },
-
-//   register: async (data: RegisterInput): Promise<AuthResponse> => {
-//     const response = await api.post<AuthResponse>('/auth/register', data);
-//     return response.data;
-//   },
-
-//   logout: async (): Promise<void> => {
-//     await api.post<void>('/auth/logout');
-//   }
-// };
+export const removeToken = () => {
+  localStorage.removeItem('auth_token');
+};
 
 export const api = {
   get: async <T>(endpoint: string): Promise<T> => {
+    const token = getToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers
     });
 
     if (!response.ok) {
@@ -64,11 +43,18 @@ export const api = {
   },
 
   post: async <T>(endpoint: string, data?: unknown): Promise<T> => {
+    const token = getToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify(data)
     });
 
@@ -83,19 +69,31 @@ export const api = {
 };
 
 export const authApi = {
-  register: async (data: RegisterInput): Promise<AuthResponse> => {
-    return api.post<AuthResponse>('/users/register', data);
+  register: async (data: RegisterInput): Promise<ApiResponse<RegisterValues>> => {
+    return api.post<ApiResponse<RegisterValues>>('/users/register', data);
   },
 
-  login: async (data: LoginInput): Promise<AuthResponse> => {
-    return api.post<AuthResponse>('/users/login', data);
+  login: async (data: LoginInput): Promise<ApiResponse<LoginValues>> => {
+    const response = await api.post<ApiResponse<LoginValues>>('/users/signin', data);
+
+    if (response.data.token) {
+      setToken(response.data.token);
+    }
+
+    return response;
   },
 
-  getUser: async (): Promise<User> => {
-    return api.get<User>('/users/me');
+  getUser: async (): Promise<ApiResponse<User>> => {
+    return api.get<ApiResponse<User>>('/users/profile');
   },
 
   logout: async (): Promise<void> => {
-    return api.post<void>('/users/logout');
+    try {
+      await api.post<{ message: string }>('/users/logout');
+    } catch (error) {
+      console.warn('Logout API failed, clearing token locally:', error);
+    } finally {
+      removeToken();
+    }
   }
 };

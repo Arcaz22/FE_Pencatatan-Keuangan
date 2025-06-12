@@ -15,17 +15,14 @@ export const SignUpPage = () => {
   const handleSubmit = async (values: RegisterInput) => {
     try {
       const result = await dispatch(register(values)).unwrap();
-      // Show success notification
       dispatch(
         showNotification({
           message: result.message,
           type: 'success'
         })
       );
-      // Navigate to login page
       navigate(paths.auth.login.path);
     } catch (error) {
-      // Show error notification
       dispatch(
         showNotification({
           message: error as string,

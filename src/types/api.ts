@@ -33,13 +33,17 @@ export type RegisterInput = {
   confirm_password: string;
 };
 
+export type RegisterValues = {
+  user: User;
+};
+
 export type LoginInput = {
   email: string;
   password: string;
 };
 
-export type AuthResponse = {
-  message: string;
+export type LoginValues = {
+  token: string;
   user: User;
 };
 

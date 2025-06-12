@@ -1,21 +1,21 @@
 import { Button } from '@/components/ui/button';
 import { Form, Input } from '@/components/ui/form';
-
-type LoginValues = {
-  email: string;
-  password: string;
-};
+import { LoginInput } from '@/types/api';
 
 type LoginFormProps = {
-  onSubmit: (values: LoginValues) => void;
+  onSubmit: (values: LoginInput) => Promise<void>;
   isLoading?: boolean;
 };
 
 export const LoginForm = ({ onSubmit, isLoading }: LoginFormProps) => {
+  const handleSubmit = (values: LoginInput) => {
+    return onSubmit(values);
+  };
+
   return (
-    <Form<LoginValues> onSubmit={onSubmit}>
+    <Form<LoginInput> onSubmit={handleSubmit}>
       {({ register, formState: { errors } }) => (
-        <>
+        <div className="space-y-4">
           <Input
             label="Email"
             type="email"
@@ -28,22 +28,20 @@ export const LoginForm = ({ onSubmit, isLoading }: LoginFormProps) => {
               }
             })}
           />
+
           <Input
             label="Password"
             type="password"
             error={errors.password}
             registration={register('password', {
-              required: 'Password wajib diisi',
-              minLength: {
-                value: 6,
-                message: 'Password minimal 6 karakter'
-              }
+              required: 'Password wajib diisi'
             })}
           />
-          <Button type="submit" className="w-full" isLoading={isLoading}>
+
+          <Button type="submit" className="w-full mt-6" isLoading={isLoading} disabled={isLoading}>
             Masuk
           </Button>
-        </>
+        </div>
       )}
     </Form>
   );

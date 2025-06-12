@@ -315,8 +315,16 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const { close } = useDisclosure();
 
   const handleLogout = async () => {
-    await logout();
-    navigate(paths.auth.login.path);
+    try {
+      await logout();
+      // Navigate to login page whether the API call succeeds or not
+      // since we're clearing the token locally anyway
+      navigate(paths.auth.login.path);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still navigate to login since we've cleared the token locally
+      navigate(paths.auth.login.path);
+    }
   };
 
   return (
