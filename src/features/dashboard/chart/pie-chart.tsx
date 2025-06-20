@@ -18,7 +18,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
   const drawChart = useCallback(() => {
     if (!chartRef.current || !data || data.length === 0) return;
 
-    // Clear previous chart
     d3.select(chartRef.current).selectAll('*').remove();
 
     const svg = d3.select(chartRef.current);
@@ -26,37 +25,30 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
     const height = chartRef.current.clientHeight;
     const radius = (Math.min(width, height) / 2) * 0.8;
 
-    // Create color scale
     const color = d3
       .scaleOrdinal<string>()
       .domain(data.map((d) => d.name))
       .range(colors);
 
-    // Create pie layout
     const pie = d3
       .pie<PieChartData>()
       .sort(null)
       .value((d) => d.value);
 
-    // Create arc generator
     const arc = d3
       .arc<PieArcDatum>()
       .innerRadius(radius * 0.4)
       .outerRadius(radius);
 
-    // Create arc generator for hover effect
     const arcHover = d3
       .arc<PieArcDatum>()
       .innerRadius(radius * 0.4)
-      .outerRadius(radius * 1.15); // More pronounced hover effect
+      .outerRadius(radius * 1.15);
 
-    // Create chart container
     const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
 
-    // Add arcs
     const arcs = g.selectAll('.arc').data(pie(data)).enter().append('g').attr('class', 'arc');
 
-    // Store paths with hover effects
     arcs
       .append('path')
       .attr('d', (d) => arc(d))
@@ -68,14 +60,12 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
       .on('mouseover', function (event, d) {
         const [mouseX, mouseY] = d3.pointer(event);
 
-        // Apply hover effect with transition
         d3.select(this)
           .transition()
           .duration(200)
           .attr('d', (d) => arcHover(d))
           .style('opacity', 1);
 
-        // Update tooltip position and active segment
         setTooltipPosition({
           x: mouseX + width / 2,
           y: mouseY + height / 2
@@ -83,7 +73,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
         setActiveSegment(d.data.name);
       })
       .on('mouseout', function () {
-        // Remove hover effect with transition
         d3.select(this)
           .transition()
           .duration(200)
@@ -93,7 +82,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
         setActiveSegment(null);
       });
 
-    // Add percentage labels inside the chart
     const total = d3.sum(data, (d) => d.value);
 
     arcs
@@ -113,7 +101,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
         return percentage > 5 ? `${Math.round(percentage)}%` : '';
       });
 
-    // Add legend
     const legendX = width < 400 ? 10 : width - 100;
     const legendY = width < 400 ? height - data.length * 20 - 10 : 10;
 
@@ -128,7 +115,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
         .attr('transform', `translate(0, ${i * 20})`)
         .style('cursor', 'pointer')
         .on('mouseover', function () {
-          // Find the corresponding pie slice and trigger its hover
           const pieSlice = svg.select(`.pie-slice-${item.name.replace(/\s+/g, '-').toLowerCase()}`);
           const pieSliceNode = pieSlice.node();
           if (pieSliceNode) {
@@ -137,7 +123,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
           }
         })
         .on('mouseout', function () {
-          // Find the corresponding pie slice and trigger its mouseout
           const pieSlice = svg.select(`.pie-slice-${item.name.replace(/\s+/g, '-').toLowerCase()}`);
           const pieSliceNode = pieSlice.node();
           if (pieSliceNode) {
@@ -161,7 +146,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
     });
   }, [data, colors]);
 
-  // Redraw chart when window resizes
   useEffect(() => {
     const handleResize = () => {
       drawChart();
@@ -175,7 +159,6 @@ export const PieChart = ({ data, colors }: PieChartProps) => {
     };
   }, [drawChart]);
 
-  // Find active item data
   const activeItem = activeSegment ? data.find((item) => item.name === activeSegment) : null;
 
   return (

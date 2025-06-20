@@ -5,3 +5,4 @@ export * from './textarea';
 export * from './form-drawer';
 export * from './label';
 export * from './switch';
+export * from './search-input';

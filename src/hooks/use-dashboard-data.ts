@@ -39,7 +39,6 @@ export const useDashboardData = () => {
   const totalExpense = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const balance = totalIncome - totalExpense;
 
-  // Prepare chart data
   const chartData: ChartData = {
     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
     datasets: [

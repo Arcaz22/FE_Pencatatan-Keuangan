@@ -1,5 +1,3 @@
-// bar-chart.tsx
-
 import { useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import { ChartData } from '@/types/api';
@@ -11,11 +9,9 @@ type BarChartProps = {
 export const BarChart = ({ data }: BarChartProps) => {
   const chartRef = useRef<SVGSVGElement | null>(null);
 
-  // Fungsi untuk menggambar chart
   const drawChart = useCallback(() => {
     if (!chartRef.current || !data) return;
 
-    // Clear previous chart
     d3.select(chartRef.current).selectAll('*').remove();
 
     const svg = d3.select(chartRef.current);
@@ -30,7 +26,6 @@ export const BarChart = ({ data }: BarChartProps) => {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    // Create scales
     const x0Scale = d3
       .scaleBand()
       .domain(data.labels)
@@ -50,10 +45,8 @@ export const BarChart = ({ data }: BarChartProps) => {
       .domain([0, maxValue * 1.1])
       .range([innerHeight, 0]);
 
-    // Create chart container with margin
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    // Add axes
     const xAxis = d3.axisBottom(x0Scale);
     const yAxis = d3
       .axisLeft(yScale)
@@ -81,7 +74,6 @@ export const BarChart = ({ data }: BarChartProps) => {
       .selectAll('text')
       .style('font-size', width < 400 ? '10px' : '12px');
 
-    // Add bars
     data.labels.forEach((month, i) => {
       data.datasets.forEach((dataset) => {
         g.append('rect')
@@ -95,7 +87,6 @@ export const BarChart = ({ data }: BarChartProps) => {
       });
     });
 
-    // Add legend
     if (width >= 400) {
       const legend = svg
         .append('g')
@@ -121,7 +112,6 @@ export const BarChart = ({ data }: BarChartProps) => {
     }
   }, [data]);
 
-  // Redraw chart when window resizes
   useEffect(() => {
     const handleResize = () => {
       drawChart();

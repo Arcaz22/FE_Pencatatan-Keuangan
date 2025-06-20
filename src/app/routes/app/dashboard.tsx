@@ -1,4 +1,3 @@
-// dashboard.tsx
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
@@ -15,7 +14,6 @@ export const DashboardPage = () => {
     balance,
     currentMonth,
     currentYear,
-    // chartData,
     pieChartData,
     handlePreviousPeriod,
     handleNextPeriod,

@@ -29,23 +29,16 @@ export const FormDrawer = ({
   isOpen,
   onOpenChange
 }: FormDrawerProps) => {
-  // Keep track if we're in controlled mode
   const isControlled = isOpen !== undefined && onOpenChange !== undefined;
 
-  // Internal state for uncontrolled mode
   const [internalOpen, setInternalOpen] = React.useState(false);
 
-  // Choose which state to use
   const drawerIsOpen = isControlled ? isOpen : internalOpen;
 
-  // For debugging
   const previousIsDone = React.useRef(isDone);
 
-  // Handle state changes
   const handleOpenChange = React.useCallback(
     (open: boolean) => {
-      console.log(`FormDrawer handleOpenChange: ${open}`);
-
       if (isControlled && onOpenChange) {
         onOpenChange(open);
       } else {
@@ -55,7 +48,6 @@ export const FormDrawer = ({
     [isControlled, onOpenChange]
   );
 
-  // When isDone changes from false to true, close the drawer
   React.useEffect(() => {
     if (!previousIsDone.current && isDone && drawerIsOpen) {
       console.log('Form is done (changed from false to true), will close drawer soon');
@@ -67,10 +59,7 @@ export const FormDrawer = ({
     previousIsDone.current = isDone;
   }, [isDone, drawerIsOpen, handleOpenChange]);
 
-  // For debugging
-  React.useEffect(() => {
-    console.log(`FormDrawer isOpen state: ${drawerIsOpen}, isDone: ${isDone}`);
-  }, [drawerIsOpen, isDone]);
+  React.useEffect(() => {}, [drawerIsOpen, isDone]);
 
   return (
     <Drawer open={drawerIsOpen} onOpenChange={handleOpenChange}>
@@ -78,7 +67,6 @@ export const FormDrawer = ({
         <DrawerTrigger
           asChild
           onClick={(e) => {
-            // This helps prevent propagation issues
             e.stopPropagation();
             handleOpenChange(true);
           }}

@@ -1,8 +1,9 @@
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import { DashboardPage } from './routes/app/dashboard';
 import { RouterErrorBoundary } from '@/components/errors/error-boundary';
+import { CategoryType } from '@/types/api';
 
 export const router = createBrowserRouter([
   {
@@ -70,11 +71,14 @@ export const router = createBrowserRouter([
         lazy: async () => {
           const { CategoryRoute } = await import('./routes/app/category');
           return {
-            element: (
-              <ProtectedRoute>
-                <CategoryRoute />
-              </ProtectedRoute>
-            )
+            Component: () => {
+              const { type } = useParams();
+              return (
+                <ProtectedRoute>
+                  <CategoryRoute type={type as CategoryType} />
+                </ProtectedRoute>
+              );
+            }
           };
         }
       },

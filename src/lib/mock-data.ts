@@ -5,24 +5,28 @@ export const mockIncomeCategories: Category[] = [
     id: '1',
     name: 'Gaji',
     description: 'Pendapatan dari pekerjaan tetap',
+    type: 'income',
     createdAt: Date.now()
   },
   {
     id: '2',
     name: 'Bonus',
     description: 'Pendapatan tambahan dari bonus',
+    type: 'income',
     createdAt: Date.now()
   },
   {
     id: '3',
     name: 'Investasi',
     description: 'Pendapatan dari investasi',
+    type: 'income',
     createdAt: Date.now()
   },
   {
     id: '4',
     name: 'Lainnya',
     description: 'Pendapatan dari sumber lain',
+    type: 'income',
     createdAt: Date.now()
   }
 ];
@@ -32,29 +36,32 @@ export const mockExpenseCategories: Category[] = [
     id: '1',
     name: 'Internet',
     description: 'Biaya internet bulanan',
+    type: 'expense',
     createdAt: Date.now()
   },
   {
     id: '2',
     name: 'Makan',
     description: 'Biaya makan per bulan',
+    type: 'expense',
     createdAt: Date.now()
   },
   {
     id: '3',
     name: 'Transportasi',
     description: 'Biaya transportasi',
+    type: 'expense',
     createdAt: Date.now()
   },
   {
     id: '4',
     name: 'Lainnya',
     description: 'Pengeluaran lain-lain',
+    type: 'expense',
     createdAt: Date.now()
   }
 ];
 
-// Mock Incomes
 export const mockIncomes: Income[] = [
   {
     id: '1',
@@ -62,7 +69,7 @@ export const mockIncomes: Income[] = [
     description: 'Gaji Bulanan',
     category: 'salary',
     date: '2024-02-20',
-    createdAt: Date.now() - 3600000 * 24 * 10 // 10 days ago
+    createdAt: Date.now() - 3600000 * 24 * 10
   },
   {
     id: '2',
@@ -70,7 +77,7 @@ export const mockIncomes: Income[] = [
     description: 'Bonus Project',
     category: 'bonus',
     date: '2024-02-21',
-    createdAt: Date.now() - 3600000 * 24 * 5 // 5 days ago
+    createdAt: Date.now() - 3600000 * 24 * 5
   },
   {
     id: '3',
@@ -78,11 +85,10 @@ export const mockIncomes: Income[] = [
     description: 'Dividen Saham',
     category: 'investment',
     date: '2024-03-01',
-    createdAt: Date.now() - 3600000 * 24 * 2 // 2 days ago
+    createdAt: Date.now() - 3600000 * 24 * 2
   }
 ];
 
-// Mock Expenses
 export const mockExpenses: Expense[] = [
   {
     id: '1',
@@ -90,7 +96,7 @@ export const mockExpenses: Expense[] = [
     description: 'Internet Bulanan',
     category: 'internet',
     date: '2024-02-20',
-    createdAt: Date.now() - 3600000 * 24 * 8 // 8 days ago
+    createdAt: Date.now() - 3600000 * 24 * 8
   },
   {
     id: '2',
@@ -98,7 +104,7 @@ export const mockExpenses: Expense[] = [
     description: 'Makan per bulan',
     category: 'makan',
     date: '2024-02-21',
-    createdAt: Date.now() - 3600000 * 24 * 4 // 4 days ago
+    createdAt: Date.now() - 3600000 * 24 * 4
   },
   {
     id: '3',
@@ -106,11 +112,10 @@ export const mockExpenses: Expense[] = [
     description: 'Bensin dan Transportasi',
     category: 'transportasi',
     date: '2024-03-05',
-    createdAt: Date.now() - 3600000 * 24 * 1 // 1 day ago
+    createdAt: Date.now() - 3600000 * 24 * 1
   }
 ];
 
-// Form options for dropdowns
 export const incomeCategories = [
   { label: 'Gaji', value: 'salary' },
   { label: 'Bonus', value: 'bonus' },
@@ -125,7 +130,6 @@ export const expenseCategories = [
   { label: 'Lainnya', value: 'other' }
 ];
 
-// Category display information for UI
 export const incomeCategoryDisplay = {
   salary: { label: 'Gaji', color: 'bg-[hsl(var(--bg-info))]' },
   bonus: { label: 'Bonus', color: 'bg-[hsl(var(--bg-success))]' },

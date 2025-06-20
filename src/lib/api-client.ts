@@ -4,7 +4,9 @@ import {
   RegisterInput,
   User,
   LoginValues,
-  RegisterValues
+  RegisterValues,
+  Category,
+  CategoryQueryParams
 } from '@/types/api';
 import { env } from '@/config/env';
 
@@ -21,7 +23,10 @@ export const removeToken = () => {
 };
 
 export const api = {
-  get: async <T>(endpoint: string): Promise<T> => {
+  get: async <T>(
+    endpoint: string,
+    params?: Record<string, string | number | boolean | null | undefined>
+  ): Promise<T> => {
     const token = getToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json'
@@ -31,7 +36,16 @@ export const api = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const url = new URL(`${API_URL}${endpoint}`);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const response = await fetch(url.toString(), {
       headers
     });
 
@@ -65,6 +79,77 @@ export const api = {
     }
 
     return result;
+  },
+
+  put: async <T>(endpoint: string, data?: unknown): Promise<T> => {
+    const token = getToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Request failed');
+    }
+
+    return result;
+  },
+
+  delete: async <T>(endpoint: string): Promise<T> => {
+    const token = getToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers
+    });
+
+    //     const result = await response.json();
+
+    //     if (!response.ok) {
+    //       throw new Error(result.message || 'Request failed');
+    //     }
+
+    //     return result;
+    //   }
+
+    if (!response.ok) {
+      try {
+        const errorResult = await response.json();
+        throw new Error(errorResult.message || 'Delete request failed');
+      } catch {
+        // If parsing fails, throw a generic error
+        throw new Error(`Delete request failed with status ${response.status}`);
+      }
+    }
+
+    // Handle 204 No Content response
+    if (response.status === 204) {
+      return { success: true } as T;
+    }
+
+    try {
+      return response.json();
+    } catch {
+      return {} as T;
+    }
   }
 };
 
@@ -95,5 +180,27 @@ export const authApi = {
     } finally {
       removeToken();
     }
+  }
+};
+
+export const categoryApi = {
+  getAll: async (params?: CategoryQueryParams): Promise<ApiResponse<Category[]>> => {
+    return api.get<ApiResponse<Category[]>>('/categories/all', params);
+  },
+
+  create: async (data: Omit<Category, 'id'>): Promise<ApiResponse<Category>> => {
+    return api.post<ApiResponse<Category>>('/categories/create', data);
+  },
+
+  update: async (
+    id: string,
+    data: Partial<Omit<Category, 'id'>>
+  ): Promise<ApiResponse<Category>> => {
+    return api.put<ApiResponse<Category>>(`/categories/${id}`, data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    // Change return type to void since 204 has no content
+    await api.delete<void>(`/categories/${id}`);
   }
 };

@@ -1,4 +1,3 @@
-// dashboard-layout.tsx
 import {
   Menu,
   Home,
@@ -45,7 +44,6 @@ const SidebarLink = ({ to, icon, label, submenu, isOpen }: SidebarLinkProps) => 
   const submenuRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  // Close submenu when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -317,19 +315,15 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const handleLogout = async () => {
     try {
       await logout();
-      // Navigate to login page whether the API call succeeds or not
-      // since we're clearing the token locally anyway
       navigate(paths.auth.login.path);
     } catch (error) {
       console.error('Logout error:', error);
-      // Still navigate to login since we've cleared the token locally
       navigate(paths.auth.login.path);
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Mobile Header - Fixed alignment between hamburger and user name */}
       <header className="flex h-14 items-center justify-between border-b border-[hsl(var(--border-input))] bg-[hsl(var(--bg-base))] px-4 lg:hidden">
         <div className="flex items-center gap-4">
           <Drawer>

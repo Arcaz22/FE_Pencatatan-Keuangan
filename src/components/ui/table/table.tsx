@@ -1,6 +1,4 @@
-// component table.tsx
-
-import { ArchiveX } from 'lucide-react';
+import { ArchiveX, ArrowUpDown } from 'lucide-react';
 import * as React from 'react';
 
 import { BaseEntity } from '@/types/api';
@@ -102,22 +100,43 @@ export {
 };
 
 export type TableColumn<Entry> = {
-  title: string;
+  title: React.ReactNode | string;
   field: keyof Entry;
+  sortable?: boolean;
   Cell?({ entry }: { entry: Entry }): React.ReactElement;
+};
+
+export type SortingState = {
+  field: string;
+  direction: 'asc' | 'desc';
 };
 
 export type TableProps<Entry> = {
   data: Entry[];
   columns: TableColumn<Entry>[];
   pagination?: TablePaginationProps;
+  sorting?: {
+    state?: SortingState;
+    onSort?: (field: string) => void;
+  };
+  isLoading?: boolean;
 };
 
 export const Table = <Entry extends BaseEntity>({
   data,
   columns,
-  pagination
+  pagination,
+  sorting,
+  isLoading = false
 }: TableProps<Entry>) => {
+  if (isLoading) {
+    return (
+      <div className="flex h-60 flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
+        <h4 className="mt-2 text-sm font-medium">Memuat data...</h4>
+      </div>
+    );
+  }
   if (!data?.length) {
     return (
       <div className="flex h-60 flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-500">
@@ -126,13 +145,36 @@ export const Table = <Entry extends BaseEntity>({
       </div>
     );
   }
+
+  const renderColumnTitle = (column: TableColumn<Entry>) => {
+    if (!column.sortable || !sorting || !sorting.onSort) {
+      return column.title;
+    }
+
+    const isActive = sorting.state ? sorting.state.field === String(column.field) : false;
+    const direction = isActive && sorting.state ? sorting.state.direction : undefined;
+
+    return (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => sorting.onSort?.(String(column.field))}
+      >
+        <span>{column.title}</span>
+        <ArrowUpDown className="ml-2 size-4" />
+        {isActive && <span className="ml-1">{direction === 'asc' ? '↑' : '↓'}</span>}
+      </div>
+    );
+  };
+
   return (
     <>
       <TableElement>
         <TableHeader>
           <TableRow>
-            {columns.map((column, index) => (
-              <TableHead key={column.title + index}>{column.title}</TableHead>
+            {columns.map((column, colIndex) => (
+              <TableHead key={`${String(column.field)}-${colIndex}`}>
+                {renderColumnTitle(column)}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -140,7 +182,7 @@ export const Table = <Entry extends BaseEntity>({
           {data.map((entry, entryIndex) => (
             <TableRow key={entry?.id || entryIndex}>
               {columns.map(({ Cell, field, title }, columnIndex) => (
-                <TableCell key={title + columnIndex}>
+                <TableCell key={String(title) + columnIndex}>
                   {Cell ? <Cell entry={entry} /> : `${entry[field]}`}
                 </TableCell>
               ))}

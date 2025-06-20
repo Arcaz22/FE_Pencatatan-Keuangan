@@ -35,12 +35,11 @@ export const IncomePage = () => {
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
 
-  // Track submission state independently from loading state
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   const handleCreateIncome = async (values: IncomeFormValues) => {
     setIsLoading(true);
-    setIsFormSubmitted(false); // Reset submission state
+    setIsFormSubmitted(false);
 
     try {
       console.log('Create income:', values);
@@ -54,7 +53,8 @@ export const IncomePage = () => {
       };
 
       setIncomes([newIncome, ...incomes]);
-      setIsFormSubmitted(true); // Mark as submitted successfully
+      setIsFormSubmitted(true);
+      successfully;
       return Promise.resolve();
     } catch (error) {
       console.error('Failed to create income:', error);
@@ -68,7 +68,7 @@ export const IncomePage = () => {
     if (!selectedIncome) return Promise.reject('No income selected');
 
     setIsLoading(true);
-    setIsFormSubmitted(false); // Reset submission state
+    setIsFormSubmitted(false);
 
     try {
       console.log('Update income:', values, 'ID:', selectedIncome.id);
@@ -80,7 +80,8 @@ export const IncomePage = () => {
           : income
       );
       setIncomes(updatedIncomes);
-      setIsFormSubmitted(true); // Mark as submitted successfully
+      setIsFormSubmitted(true);
+      successfully;
       return Promise.resolve();
     } catch (error) {
       console.error('Failed to update income:', error);
@@ -205,7 +206,6 @@ export const IncomePage = () => {
     }
   ] as const;
 
-  // Handle add button click - now resets isFormSubmitted first
   const handleAddButtonClick = () => {
     console.log('Add button clicked, setting isAddDrawerOpen to true');
     setIsFormSubmitted(false); // Reset submission flag when opening
@@ -252,13 +252,11 @@ export const IncomePage = () => {
           </Button>
         </div>
 
-        {/* Add Income FormDrawer - Now uses isFormSubmitted instead of !isLoading for isDone */}
         <FormDrawer
           isDone={isFormSubmitted}
           title="Tambah Pemasukan"
           isOpen={isAddDrawerOpen}
           onOpenChange={(open) => {
-            console.log('FormDrawer onOpenChange called with:', open);
             setIsAddDrawerOpen(open);
             if (!open) {
               // Reset form submitted state when drawer closes
@@ -275,7 +273,6 @@ export const IncomePage = () => {
           <IncomeForm id="income-form" onSubmit={handleCreateIncome} />
         </FormDrawer>
 
-        {/* Edit Income FormDrawer - Also uses isFormSubmitted instead of !isLoading */}
         <FormDrawer
           isDone={isFormSubmitted}
           title="Edit Pemasukan"

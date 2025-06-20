@@ -18,7 +18,6 @@ type BudgetFormValues = {
 export const BudgetPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [budgets] = useState<Budget[]>([
-    // Mock data - replace with actual data later
     {
       id: '1',
       categoryId: 'makan',
@@ -34,7 +33,6 @@ export const BudgetPage = () => {
     setIsLoading(true);
     try {
       console.log(values);
-      // Add API call here
     } finally {
       setIsLoading(false);
     }

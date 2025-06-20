@@ -10,7 +10,6 @@ interface AuthState {
   error: string | null;
 }
 
-// Use the imported getToken function
 const storedToken = getToken();
 
 const initialState: AuthState = {
@@ -20,7 +19,6 @@ const initialState: AuthState = {
   error: null
 };
 
-// Register thunk (doesn't change - no token involved)
 export const register = createAsyncThunk(
   'auth/register',
   async (data: RegisterInput, { rejectWithValue }) => {
@@ -39,13 +37,11 @@ export const register = createAsyncThunk(
   }
 );
 
-// Login thunk - no need to manually save token as authApi.login already does it
 export const login = createAsyncThunk(
   'auth/login',
   async (data: LoginInput, { rejectWithValue }) => {
     try {
       const response = await authApi.login(data);
-      // Token is already saved by authApi.login
       return {
         user: response.data.user,
         token: response.data.token,
@@ -60,10 +56,8 @@ export const login = createAsyncThunk(
   }
 );
 
-// Get user profile thunk
 export const getUser = createAsyncThunk('auth/getUser', async (_, { rejectWithValue }) => {
   try {
-    // Use the helper function
     const token = getToken();
     if (!token) {
       return rejectWithValue('No token found');
@@ -82,11 +76,9 @@ export const getUser = createAsyncThunk('auth/getUser', async (_, { rejectWithVa
   }
 });
 
-// Logout thunk - no need to manually remove token as authApi.logout already does it
 export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
   try {
     const response = await authApi.logout();
-    // Token is already removed by authApi.logout
     return response;
   } catch (err) {
     if (err instanceof Error) {
@@ -106,12 +98,11 @@ const authSlice = createSlice({
     clearUser: (state) => {
       state.user = null;
       state.token = null;
-      removeToken(); // Use the helper function
+      removeToken();
     }
   },
   extraReducers: (builder) => {
     builder
-      // Register cases (no change)
       .addCase(register.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -125,7 +116,6 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // Login cases
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -140,7 +130,6 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      // Get user cases
       .addCase(getUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -154,13 +143,10 @@ const authSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-        // Clear auth state on rejection
         state.user = null;
         state.token = null;
-        // Use the helper function
         removeToken();
       })
-      // Logout cases
       .addCase(logout.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -174,10 +160,6 @@ const authSlice = createSlice({
       .addCase(logout.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-        // Even on failed logout, clear the state
-        // state.user = null;
-        // state.token = null;
-        // removeToken(); // Use the helper function
       });
   }
 });

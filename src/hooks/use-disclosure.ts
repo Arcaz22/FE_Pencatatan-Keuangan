@@ -1,4 +1,3 @@
-// hooks/use-disclosure.ts
 import * as React from 'react';
 
 export const useDisclosure = () => {

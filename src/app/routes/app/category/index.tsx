@@ -1,15 +1,11 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { FC } from 'react';
 import { CategoryPage } from './page';
-import { mockIncomeCategories, mockExpenseCategories } from '@/lib/mock-data';
+import { CategoryType } from '@/types/api';
 
-export const CategoryRoute = () => {
-  const { type } = useParams<{ type: string }>();
+interface CategoryRouteProps {
+  type: CategoryType;
+}
 
-  if (type !== 'income' && type !== 'expense') {
-    return <Navigate to="/404" replace />;
-  }
-
-  const categories = type === 'income' ? mockIncomeCategories : mockExpenseCategories;
-
-  return <CategoryPage type={type as 'income' | 'expense'} categories={categories} />;
+export const CategoryRoute: FC<CategoryRouteProps> = ({ type }) => {
+  return <CategoryPage type={type} />;
 };

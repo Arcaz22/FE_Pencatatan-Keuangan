@@ -7,21 +7,14 @@ type SkeletonLoaderProps = {
 };
 
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ className = '', type }) => {
-  // Gunakan location untuk otomatis mendeteksi halaman jika type tidak disediakan
   const location = useLocation();
   const path = location.pathname;
 
-  // Tentukan tipe skeleton berdasarkan path jika tidak disediakan
   const skeletonType = type || getSkeletonTypeFromPath(path);
 
-  // Log untuk debugging
-  console.log('Rendering skeleton for:', skeletonType);
-
-  // Render skeleton berdasarkan tipe
   return <div className={`${className}`}>{renderSkeletonByType(skeletonType)}</div>;
 };
 
-// Helper untuk menentukan tipe skeleton dari path
 function getSkeletonTypeFromPath(path: string): SkeletonLoaderProps['type'] {
   if (path.includes('/dashboard')) return 'dashboard';
   if (path.includes('/income')) return 'income';
@@ -31,7 +24,6 @@ function getSkeletonTypeFromPath(path: string): SkeletonLoaderProps['type'] {
   return 'default';
 }
 
-// Render skeleton berdasarkan tipe
 function renderSkeletonByType(type: SkeletonLoaderProps['type']) {
   switch (type) {
     case 'dashboard':
@@ -48,7 +40,6 @@ function renderSkeletonByType(type: SkeletonLoaderProps['type']) {
   }
 }
 
-// Skeleton untuk dashboard
 const DashboardSkeleton = () => (
   <div className="space-y-6 p-4">
     {/* Header dan selector */}
@@ -57,14 +48,12 @@ const DashboardSkeleton = () => (
       <div className="h-10 bg-gray-200 rounded w-48 animate-pulse"></div>
     </div>
 
-    {/* Cards */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {[1, 2, 3].map((i) => (
         <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
       ))}
     </div>
 
-    {/* Charts */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="bg-gray-200 rounded h-[400px] animate-pulse"></div>
       <div className="bg-gray-200 rounded h-[400px] animate-pulse"></div>
@@ -72,7 +61,6 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-// Skeleton untuk tabel (income/expense)
 const TableSkeleton = ({ type }: { type: 'income' | 'expense' | undefined }) => (
   <div className="space-y-8 p-4">
     {/* Header dengan tombol */}
@@ -81,15 +69,11 @@ const TableSkeleton = ({ type }: { type: 'income' | 'expense' | undefined }) => 
       <div className="h-10 bg-gray-200 rounded w-40 animate-pulse"></div>
     </div>
 
-    {/* Title */}
     {type && <div className="h-6 bg-gray-200 rounded w-64 animate-pulse mb-4"></div>}
 
-    {/* Tabel */}
     <div className="space-y-4 animate-pulse">
-      {/* Header tabel */}
       <div className="h-12 bg-gray-200 rounded"></div>
 
-      {/* Baris-baris tabel */}
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="h-16 bg-gray-200 rounded"></div>
       ))}
@@ -97,16 +81,13 @@ const TableSkeleton = ({ type }: { type: 'income' | 'expense' | undefined }) => 
   </div>
 );
 
-// Skeleton untuk budget
 const BudgetSkeleton = () => (
   <div className="space-y-6 p-4">
-    {/* Header dengan tombol */}
     <div className="flex justify-between items-center">
       <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
       <div className="h-10 bg-gray-200 rounded w-40 animate-pulse"></div>
     </div>
 
-    {/* Budget cards */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
@@ -115,16 +96,13 @@ const BudgetSkeleton = () => (
   </div>
 );
 
-// Skeleton untuk category
 const CategorySkeleton = () => (
   <div className="space-y-6 p-4">
-    {/* Header dengan tombol */}
     <div className="flex justify-between items-center">
       <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
       <div className="h-10 bg-gray-200 rounded w-40 animate-pulse"></div>
     </div>
 
-    {/* Category list */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
@@ -133,7 +111,6 @@ const CategorySkeleton = () => (
   </div>
 );
 
-// Default skeleton
 const DefaultSkeleton = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="w-full max-w-md p-4">

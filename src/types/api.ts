@@ -16,12 +16,21 @@ export type Meta = {
   total_records: number;
 };
 
+export type QueryParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+};
+
 export type ApiResponse<T> = {
   message: string;
   data: T;
   pagination?: Meta;
 };
 
+// User types
 export type User = Entity<{
   name: string;
   email: string;
@@ -47,6 +56,25 @@ export type LoginValues = {
   user: User;
 };
 
+// Category types
+export type CategoryType = 'income' | 'expense';
+
+export type CategoryQueryParams = QueryParams & {
+  type?: CategoryType;
+};
+
+export type Category = BaseEntity & {
+  name: string;
+  type: CategoryType;
+  description: string;
+};
+
+export type CategoryFormValues = {
+  name: string;
+  type: CategoryType;
+  description: string;
+};
+
 // Base type for transaction forms
 type BaseTransactionFormValues = {
   amount: number;
@@ -62,17 +90,6 @@ export type IncomeFormValues = BaseTransactionFormValues;
 // Expense types
 export type Expense = BaseEntity & BaseTransactionFormValues;
 export type ExpenseFormValues = BaseTransactionFormValues;
-
-// Category types
-export type Category = BaseEntity & {
-  name: string;
-  description: string;
-};
-
-export type CategoryFormValues = {
-  name: string;
-  description?: string;
-};
 
 // Statistics types
 export type StatsData = {

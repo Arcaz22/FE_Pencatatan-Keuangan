@@ -18,7 +18,6 @@ export const LineChart = ({ data }: LineChartProps) => {
   const drawChart = useCallback(() => {
     if (!chartRef.current || !data.length) return;
 
-    // Clear previous chart
     d3.select(chartRef.current).selectAll('*').remove();
 
     const svg = d3.select(chartRef.current);
@@ -33,7 +32,6 @@ export const LineChart = ({ data }: LineChartProps) => {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    // Create scales
     const xScale = d3
       .scaleTime()
       .domain(d3.extent(data, (d) => new Date(d.date)) as [Date, Date])
@@ -46,7 +44,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .range([innerHeight, 0])
       .nice();
 
-    // Create line generators with smoothing
     const amountLine = d3
       .line<BudgetData>()
       .x((d) => xScale(new Date(d.date)))
@@ -59,10 +56,8 @@ export const LineChart = ({ data }: LineChartProps) => {
       .y((d) => yScale(d.budget))
       .curve(d3.curveCardinal.tension(0.5));
 
-    // Create chart container
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    // Add light grid lines
     g.append('g')
       .attr('class', 'grid')
       .attr('opacity', 0.1)
@@ -88,7 +83,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .select('.domain')
       .remove();
 
-    // Configure axes with proper formatting
     const xAxis = d3
       .axisBottom(xScale)
       .ticks(data.length > 6 ? 6 : data.length)
@@ -102,7 +96,6 @@ export const LineChart = ({ data }: LineChartProps) => {
         return formatCurrency(d).replace('Rp', 'Rp ');
       });
 
-    // Add axes to chart with styling
     g.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${innerHeight})`)
@@ -123,7 +116,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .style('font-size', width < 400 ? '10px' : '12px')
       .style('fill', 'hsl(var(--text-secondary))');
 
-    // Add gradient for the area under the amount line
     const gradient = g
       .append('defs')
       .append('linearGradient')
@@ -140,7 +132,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .attr('offset', '100%')
       .attr('stop-color', 'hsl(var(--bg-primary) / 0.05)');
 
-    // Area under amount line
     const area = d3
       .area<BudgetData>()
       .x((d) => xScale(new Date(d.date)))
@@ -148,10 +139,8 @@ export const LineChart = ({ data }: LineChartProps) => {
       .y1((d) => yScale(d.amount))
       .curve(d3.curveCardinal.tension(0.5));
 
-    // Add area under the amount line
     g.append('path').datum(data).attr('fill', 'url(#area-gradient)').attr('d', area);
 
-    // Add budget line
     g.append('path')
       .datum(data)
       .attr('fill', 'none')
@@ -160,7 +149,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .attr('stroke-dasharray', '5,3')
       .attr('d', budgetLine);
 
-    // Add amount line
     g.append('path')
       .datum(data)
       .attr('fill', 'none')
@@ -168,7 +156,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .attr('stroke-width', 2.5)
       .attr('d', amountLine);
 
-    // Add dots for data points
     g.selectAll('.dot')
       .data(data)
       .enter()
@@ -182,10 +169,8 @@ export const LineChart = ({ data }: LineChartProps) => {
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
       .on('mouseover', function (event, d) {
-        // Enlarge the circle on hover
         d3.select(this).transition().duration(200).attr('r', 6);
 
-        // Add tooltip
         const tooltip = g
           .append('g')
           .attr('class', 'tooltip')
@@ -214,20 +199,16 @@ export const LineChart = ({ data }: LineChartProps) => {
           .text(formatCurrency(d.amount));
       })
       .on('mouseout', function () {
-        // Restore circle size
         d3.select(this).transition().duration(200).attr('r', 4);
 
-        // Remove tooltip
         g.selectAll('.tooltip').remove();
       });
 
-    // Add legend
     const legend = svg
       .append('g')
       .attr('class', 'legend')
       .attr('transform', `translate(${width - margin.right + 15}, ${margin.top})`);
 
-    // Spending legend item
     const legendSpending = legend.append('g');
     legendSpending
       .append('circle')
@@ -244,7 +225,6 @@ export const LineChart = ({ data }: LineChartProps) => {
       .style('font-size', '12px')
       .style('fill', 'hsl(var(--text-primary))');
 
-    // Budget legend item
     const legendBudget = legend.append('g').attr('transform', 'translate(0, 25)');
     legendBudget
       .append('line')
