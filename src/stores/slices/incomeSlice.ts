@@ -1,16 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { categoryApi } from '@/lib/api-client';
-import type { Category, CategoryQueryParams, CategoryFormValues, Meta } from '@/types/api';
+import { incomeApi } from '@/lib/api-client';
+import type { Income, QueryParams, IncomeFormValues, Meta } from '@/types/api';
 
-interface CategoryState {
-  categories: Category[];
+interface IncomeState {
+  incomes: Income[];
   isLoading: boolean;
   error: string | null;
   pagination: Meta;
 }
 
-const initialState: CategoryState = {
-  categories: [],
+const initialState: IncomeState = {
+  incomes: [],
   isLoading: false,
   error: null,
   pagination: {
@@ -20,12 +20,11 @@ const initialState: CategoryState = {
     total_records: 0
   }
 };
-
-export const fetchCategories = createAsyncThunk(
-  'category/fetchAll',
-  async (params: CategoryQueryParams, { rejectWithValue }) => {
+export const fetchIncomes = createAsyncThunk(
+  'income/fetchAll',
+  async (params: QueryParams, { rejectWithValue }) => {
     try {
-      const response = await categoryApi.getAll(params);
+      const response = await incomeApi.getAll(params);
       return {
         data: response.data,
         pagination: response.pagination
@@ -34,16 +33,16 @@ export const fetchCategories = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Gagal mengambil data kategori');
+      return rejectWithValue('Failed to fetch income data');
     }
   }
 );
 
-export const createCategory = createAsyncThunk(
-  'category/create',
-  async (data: CategoryFormValues, { rejectWithValue }) => {
+export const createIncome = createAsyncThunk(
+  'income/create',
+  async (data: IncomeFormValues, { rejectWithValue }) => {
     try {
-      const response = await categoryApi.create(data);
+      const response = await incomeApi.create(data);
       return {
         data: response.data,
         message: response.message
@@ -52,16 +51,16 @@ export const createCategory = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Gagal membuat kategori');
+      return rejectWithValue('Failed to create income');
     }
   }
 );
 
-export const updateCategory = createAsyncThunk(
-  'category/update',
-  async ({ id, data }: { id: string; data: CategoryFormValues }, { rejectWithValue }) => {
+export const updateIncome = createAsyncThunk(
+  'income/update',
+  async ({ id, data }: { id: string; data: Partial<IncomeFormValues> }, { rejectWithValue }) => {
     try {
-      const response = await categoryApi.update(id, data);
+      const response = await incomeApi.update(id, data);
       return {
         data: response.data,
         message: response.message
@@ -70,95 +69,94 @@ export const updateCategory = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Gagal mengupdate kategori');
+      return rejectWithValue('Failed to update income');
     }
   }
 );
 
-export const deleteCategory = createAsyncThunk(
-  'category/delete',
+export const deleteIncome = createAsyncThunk(
+  'income/delete',
   async (id: string, { rejectWithValue }) => {
     try {
-      await categoryApi.delete(id);
-
+      await incomeApi.delete(id);
       return {
         id,
-        message: 'Kategori berhasil dihapus'
+        message: 'Income berhasil dihapus'
       };
     } catch (err) {
-      console.error('Error deleting category:', err);
+      console.error('Error deleting income:', err);
 
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
 
-      return rejectWithValue('Gagal menghapus kategori');
+      return rejectWithValue('Gagal menghapus pendapatan');
     }
   }
 );
 
-const categorySlice = createSlice({
-  name: 'category',
+const incomeSlice = createSlice({
+  name: 'income',
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
     clearCategories: (state) => {
-      state.categories = [];
+      state.incomes = [];
       state.pagination = initialState.pagination;
     }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCategories.pending, (state) => {
+      .addCase(fetchIncomes.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchCategories.fulfilled, (state, action) => {
+      .addCase(fetchIncomes.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories = action.payload.data;
+        state.incomes = action.payload.data;
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
         state.error = null;
       })
-      .addCase(fetchCategories.rejected, (state, action) => {
+      .addCase(fetchIncomes.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(createCategory.pending, (state) => {
+      .addCase(createIncome.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(createCategory.fulfilled, (state) => {
+      .addCase(createIncome.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
-      .addCase(createCategory.rejected, (state, action) => {
+      .addCase(createIncome.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(updateCategory.pending, (state) => {
+      .addCase(updateIncome.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(updateCategory.fulfilled, (state) => {
+      .addCase(updateIncome.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
-      .addCase(updateCategory.rejected, (state, action) => {
+      .addCase(updateIncome.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(deleteCategory.fulfilled, (state, action) => {
+      .addCase(deleteIncome.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = null;
 
-        state.categories = state.categories.filter((cat) => cat.id !== action.payload.id);
+        state.incomes = state.incomes.filter((cat) => cat.id !== action.payload.id);
 
         if (state.pagination.total_records > 0) {
           state.pagination.total_records -= 1;
@@ -171,19 +169,17 @@ const categorySlice = createSlice({
           state.pagination.current_page = state.pagination.total_pages;
         }
       })
-      .addCase(deleteCategory.rejected, (state, action) => {
+      .addCase(deleteIncome.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });
   }
 });
 
-export const { clearError, clearCategories } = categorySlice.actions;
-export default categorySlice.reducer;
+export const { clearError, clearCategories } = incomeSlice.actions;
+export default incomeSlice.reducer;
 
-export const selectCategories = (state: { category: CategoryState }) => state.category.categories;
-export const selectCategoryLoading = (state: { category: CategoryState }) =>
-  state.category.isLoading;
-export const selectCategoryError = (state: { category: CategoryState }) => state.category.error;
-export const selectCategoryPagination = (state: { category: CategoryState }) =>
-  state.category.pagination;
+export const selectIncomes = (state: { income: IncomeState }) => state.income.incomes;
+export const selectIncomeLoading = (state: { income: IncomeState }) => state.income.isLoading;
+export const selectIncomeError = (state: { income: IncomeState }) => state.income.error;
+export const selectIncomePagination = (state: { income: IncomeState }) => state.income.pagination;

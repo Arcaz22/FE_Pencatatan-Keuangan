@@ -15,6 +15,8 @@ type SelectFieldProps = FieldWrapperPassThroughProps & {
   className?: string;
   defaultValue?: string;
   registration: Partial<UseFormRegisterReturn>;
+  disabled?: boolean;
+  placeholder?: string;
 };
 
 export const Select = (props: SelectFieldProps) => {

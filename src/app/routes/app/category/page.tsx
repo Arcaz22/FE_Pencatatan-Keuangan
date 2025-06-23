@@ -169,13 +169,8 @@ export const CategoryPage = ({ type }: CategoryPageProps) => {
     try {
       const categoryName = selectedCategory.name;
 
-      // Add logging for debugging
-      console.log('Deleting category:', selectedCategory.id);
-
       const resultAction = await dispatch(deleteCategory(selectedCategory.id));
-      console.log('Delete category result:', resultAction);
 
-      // Check if the action was fulfilled or rejected
       if (deleteCategory.fulfilled.match(resultAction)) {
         dispatch(
           showNotification({
@@ -184,14 +179,12 @@ export const CategoryPage = ({ type }: CategoryPageProps) => {
           })
         );
 
-        // Optionally refresh the categories list
         await fetchCategoriesHandler({
           page: pagination?.current_page || 1,
           limit: 5,
           type
         });
       } else {
-        // This block will run if the action was rejected
         dispatch(
           showNotification({
             type: 'error',

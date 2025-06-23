@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableColumn } from '@/components/ui/table';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { ContentLayout } from '@/components/layout/content-layout';
+import { IncomeForm } from '@/features/income/income-form';
+import { Income, IncomeFormValues, QueryParams } from '@/types/api';
+import { cn } from '@/utils/cn';
+import { SearchPaginationParams, useSearchAndPagination } from '@/hooks/user-search-pagination';
+import { showNotification } from '@/stores/slices/notificationSlice';
+import { FormDrawer, SearchInput } from '@/components/ui/form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,231 +20,303 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { ContentLayout } from '@/components/layout/content-layout';
-import { mockIncomes, incomeCategoryDisplay } from '@/lib/mock-data';
-import { Income } from '@/types/api';
-import { IncomeForm } from '@/features/income/income-form';
-import { cn } from '@/utils/cn';
-import { FormDrawer } from '@/components/ui/form';
-
-type IncomeFormValues = {
-  amount: number;
-  description: string;
-  category: string;
-  date: string;
-};
+import { useAppDispatch, useAppSelector } from '@/stores/hooks';
+import {
+  fetchIncomes,
+  createIncome,
+  updateIncome,
+  deleteIncome,
+  selectIncomes,
+  selectIncomeLoading,
+  selectIncomePagination
+} from '@/stores/slices/incomeSlice';
+import { useSearchParams } from 'react-router-dom';
+import { incomeCategoryDisplay } from '@/lib/mock-data';
 
 export const IncomePage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [incomes, setIncomes] = useState<Income[]>(mockIncomes);
   const [selectedIncome, setSelectedIncome] = useState<Income | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
-
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
+  const dispatch = useAppDispatch();
+  const incomes = useAppSelector(selectIncomes);
+  const isLoading = useAppSelector(selectIncomeLoading);
+  const pagination = useAppSelector(selectIncomePagination);
+  const [searchParams] = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+
+  const fetchIncomesHandler = useCallback(
+    async (params: QueryParams) => {
+      await dispatch(fetchIncomes(params));
+    },
+    [dispatch]
+  );
+
+  const fetchDataMemoized = useCallback(
+    async (params: SearchPaginationParams<void>): Promise<void> => {
+      return fetchIncomesHandler({
+        page: params.page,
+        limit: 5,
+        search: params.search,
+        sort_by: params.sort_by,
+        sort_dir: params.sort_dir
+      });
+    },
+    [fetchIncomesHandler]
+  );
+
+  const { searchTerm, setSearchTerm, sorting, handleSort, handleSearchKeyDown } =
+    useSearchAndPagination({
+      initialSortField: 'date',
+      fetchData: fetchDataMemoized
+    });
+
+  useEffect(() => {
+    fetchIncomesHandler({
+      page: currentPage,
+      limit: 5
+    });
+  }, [fetchIncomesHandler, currentPage]);
+
   const handleCreateIncome = async (values: IncomeFormValues) => {
-    setIsLoading(true);
-    setIsFormSubmitted(false);
-
     try {
-      console.log('Create income:', values);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const formattedDate = values.date.includes('T') ? values.date.split('T')[0] : values.date;
 
-      const newIncome = {
-        id: `income-${Date.now()}`,
+      const incomeData: IncomeFormValues = {
         ...values,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        category_id: values.category,
+        date: formattedDate
       };
 
-      setIncomes([newIncome, ...incomes]);
-      setIsFormSubmitted(true);
-      successfully;
-      return Promise.resolve();
+      const resultAction = await dispatch(createIncome(incomeData));
+
+      if (createIncome.fulfilled.match(resultAction)) {
+        dispatch(
+          showNotification({
+            message:
+              resultAction.payload.message || `Pemasukan "${values.description}" berhasil dibuat`,
+            type: 'success'
+          })
+        );
+
+        await fetchIncomesHandler({
+          page: pagination.current_page,
+          limit: 5,
+          search: searchTerm,
+          sort_by: sorting?.field,
+          sort_dir: sorting?.direction
+        });
+
+        setIsFormSubmitted(true);
+        setIsAddDrawerOpen(false);
+      }
     } catch (error) {
       console.error('Failed to create income:', error);
-      return Promise.reject(error);
-    } finally {
-      setIsLoading(false);
+      dispatch(
+        showNotification({
+          message: error instanceof Error ? error.message : 'Gagal membuat pemasukan',
+          type: 'error'
+        })
+      );
     }
   };
 
   const handleUpdateIncome = async (values: IncomeFormValues) => {
-    if (!selectedIncome) return Promise.reject('No income selected');
+    if (!selectedIncome) return;
 
-    setIsLoading(true);
     setIsFormSubmitted(false);
-
     try {
-      console.log('Update income:', values, 'ID:', selectedIncome.id);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const formattedDate = values.date.includes('T') ? values.date.split('T')[0] : values.date;
 
-      const updatedIncomes = incomes.map((income) =>
-        income.id === selectedIncome.id
-          ? { ...income, ...values, updatedAt: new Date().toISOString() }
-          : income
+      const incomeData: IncomeFormValues = {
+        ...values,
+        category_id: values.category,
+        date: formattedDate
+      };
+
+      const resultAction = await dispatch(
+        updateIncome({ id: selectedIncome.id, data: incomeData })
       );
-      setIncomes(updatedIncomes);
-      setIsFormSubmitted(true);
-      successfully;
-      return Promise.resolve();
+
+      if (updateIncome.fulfilled.match(resultAction)) {
+        dispatch(
+          showNotification({
+            message: resultAction.payload.message || 'Pemasukan berhasil diperbarui',
+            type: 'success'
+          })
+        );
+
+        await fetchIncomesHandler({
+          page: pagination.current_page,
+          limit: 5,
+          search: searchTerm,
+          sort_by: sorting?.field,
+          sort_dir: sorting?.direction
+        });
+
+        setIsFormSubmitted(true);
+        setIsEditDrawerOpen(false);
+        setSelectedIncome(null);
+      }
     } catch (error) {
       console.error('Failed to update income:', error);
-      return Promise.reject(error);
-    } finally {
-      setIsLoading(false);
+      dispatch(
+        showNotification({
+          message: error instanceof Error ? error.message : 'Gagal memperbarui pemasukan',
+          type: 'error'
+        })
+      );
     }
   };
 
   const handleDeleteIncome = async () => {
     if (!selectedIncome) return;
 
-    setIsLoading(true);
     try {
-      console.log('Delete income:', selectedIncome.id);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const resultAction = await dispatch(deleteIncome(selectedIncome.id));
 
-      const filteredIncomes = incomes.filter((income) => income.id !== selectedIncome.id);
-      setIncomes(filteredIncomes);
+      if (deleteIncome.fulfilled.match(resultAction)) {
+        dispatch(
+          showNotification({
+            message: resultAction.payload.message || 'Pemasukan berhasil dihapus',
+            type: 'success'
+          })
+        );
 
+        await fetchIncomesHandler({
+          page: pagination.current_page,
+          limit: 5,
+          search: searchTerm,
+          sort_by: sorting?.field,
+          sort_dir: sorting?.direction
+        });
+      } else {
+        dispatch(
+          showNotification({
+            type: 'error',
+            message:
+              (resultAction.payload as string) || 'Gagal menghapus pemasukan. Silakan coba lagi.'
+          })
+        );
+      }
       setIsDeleteDialogOpen(false);
+      setSelectedIncome(null);
     } catch (error) {
       console.error('Failed to delete income:', error);
-    } finally {
-      setIsLoading(false);
-      setSelectedIncome(null);
+      dispatch(
+        showNotification({
+          type: 'error',
+          message: 'Gagal menghapus pemasukan. Silakan coba lagi.'
+        })
+      );
     }
   };
 
-  const columns: TableColumn<Income>[] = [
-    {
-      title: 'Tanggal',
-      field: 'date' as keyof Income,
-      Cell: ({ entry }) => {
-        const date = new Date(entry.date);
-        return (
-          <div className="flex flex-col">
-            <span className="font-medium text-[hsl(var(--text-primary))]">
-              {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-            </span>
-            <span className="text-xs text-[hsl(var(--text-secondary))]">{date.getFullYear()}</span>
-          </div>
-        );
-      }
-    },
-    {
-      title: 'Kategori',
-      field: 'category' as keyof Income,
-      Cell: ({ entry }) => {
-        const category = entry.category;
-        if (category in incomeCategoryDisplay) {
-          const categoryInfo =
-            incomeCategoryDisplay[category as keyof typeof incomeCategoryDisplay];
+  const columns: TableColumn<Income>[] = useMemo(
+    () => [
+      {
+        title: 'Tanggal',
+        field: 'date',
+        sortable: true,
+        Cell: ({ entry }) => {
+          const date = new Date(entry.date);
           return (
-            <div className="flex items-center">
-              <span
-                className={cn(
-                  'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium text-[hsl(var(--text-white))]',
-                  categoryInfo.color,
-                  category === 'other' && 'text-[hsl(var(--text-secondary))]'
-                )}
-              >
-                {categoryInfo.label}
+            <div className="flex flex-col">
+              <span className="font-medium text-[hsl(var(--text-primary))]">
+                {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+              </span>
+              <span className="text-xs text-[hsl(var(--text-secondary))]">
+                {date.getFullYear()}
               </span>
             </div>
           );
         }
-        return <div>{category}</div>;
+      },
+      {
+        title: 'Kategori',
+        field: 'category',
+        sortable: true,
+        Cell: ({ entry }) => {
+          const category = entry.category;
+          if (category in incomeCategoryDisplay) {
+            const categoryInfo =
+              incomeCategoryDisplay[category as keyof typeof incomeCategoryDisplay];
+            return (
+              <div className="flex items-center">
+                <span
+                  className={cn(
+                    'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium text-[hsl(var(--text-white))]',
+                    categoryInfo.color,
+                    category === 'other' && 'text-[hsl(var(--text-secondary))]'
+                  )}
+                >
+                  {categoryInfo.label}
+                </span>
+              </div>
+            );
+          }
+          return <div>{category}</div>;
+        }
+      },
+      {
+        title: 'Keterangan',
+        field: 'description',
+        sortable: true,
+        Cell: ({ entry }) => (
+          <div className="flex items-center">
+            <span className="text-[hsl(var(--text-primary))]">{entry.description}</span>
+          </div>
+        )
+      },
+      {
+        title: 'Jumlah',
+        field: 'amount',
+        sortable: true,
+        Cell: ({ entry }) => (
+          <div className="flex items-center">
+            <span className="font-medium text-[hsl(var(--text-primary))]">
+              Rp {entry.amount.toLocaleString('id-ID')}
+            </span>
+          </div>
+        )
+      },
+      {
+        title: 'Actions',
+        field: 'id',
+        Cell: ({ entry }) => (
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedIncome(entry);
+                setIsEditDrawerOpen(true);
+              }}
+            >
+              <Pencil className="size-4 text-[hsl(var(--text-secondary))]" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedIncome(entry);
+                setIsDeleteDialogOpen(true);
+              }}
+            >
+              <Trash2 className="size-4 text-[hsl(var(--bg-destructive))]" />
+            </Button>
+          </div>
+        )
       }
-    },
-    {
-      title: 'Keterangan',
-      field: 'description' as keyof Income,
-      Cell: ({ entry }) => (
-        <div className="flex items-center">
-          <span className="text-[hsl(var(--text-primary))]">{entry.description}</span>
-        </div>
-      )
-    },
-    {
-      title: 'Jumlah',
-      field: 'amount' as keyof Income,
-      Cell: ({ entry }) => (
-        <div className="flex items-center">
-          <span className="font-medium text-[hsl(var(--text-primary))]">
-            Rp {entry.amount.toLocaleString('id-ID')}
-          </span>
-        </div>
-      )
-    },
-    {
-      title: 'Actions',
-      field: 'id' as keyof Income,
-      Cell: ({ entry }) => (
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSelectedIncome(entry);
-              setIsEditDrawerOpen(true);
-            }}
-          >
-            <Pencil className="size-4 text-[hsl(var(--text-secondary))]" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSelectedIncome(entry);
-              setIsDeleteDialogOpen(true);
-            }}
-          >
-            <Trash2 className="size-4 text-[hsl(var(--bg-destructive))]" />
-          </Button>
-        </div>
-      )
-    }
-  ] as const;
-
-  const handleAddButtonClick = () => {
-    console.log('Add button clicked, setting isAddDrawerOpen to true');
-    setIsFormSubmitted(false); // Reset submission flag when opening
-    setIsAddDrawerOpen(true);
-  };
-
-  // Effects to control drawer state based on submission
-  useEffect(() => {
-    if (isFormSubmitted && isAddDrawerOpen) {
-      const timer = setTimeout(() => {
-        setIsAddDrawerOpen(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFormSubmitted, isAddDrawerOpen]);
-
-  useEffect(() => {
-    if (isFormSubmitted && isEditDrawerOpen) {
-      const timer = setTimeout(() => {
-        setIsEditDrawerOpen(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFormSubmitted, isEditDrawerOpen]);
-
-  // Reset form submission flag when drawer closes
-  useEffect(() => {
-    if (!isAddDrawerOpen && !isEditDrawerOpen) {
-      setIsFormSubmitted(false);
-    }
-  }, [isAddDrawerOpen, isEditDrawerOpen]);
+    ],
+    []
+  );
 
   return (
     <DashboardLayout>
@@ -246,32 +326,36 @@ export const IncomePage = () => {
             Daftar Pemasukan
           </h1>
 
-          {/* Add Income Button - Changed to regular button to separate from drawer logic */}
-          <Button onClick={handleAddButtonClick} icon={<Plus className="size-4" />}>
-            Tambah Pemasukan
-          </Button>
+          <FormDrawer
+            isDone={isFormSubmitted}
+            title="Tambah Pemasukan"
+            isOpen={isAddDrawerOpen}
+            onOpenChange={(open) => {
+              setIsAddDrawerOpen(open);
+              if (!open) {
+                setIsFormSubmitted(false);
+              }
+            }}
+            triggerButton={<Button icon={<Plus className="size-4" />}>Tambah Pemasukan</Button>}
+            submitButton={
+              <Button type="submit" form="income-form" isLoading={isLoading}>
+                Simpan
+              </Button>
+            }
+          >
+            <IncomeForm onSubmit={handleCreateIncome} isLoading={isLoading} />
+          </FormDrawer>
         </div>
 
-        <FormDrawer
-          isDone={isFormSubmitted}
-          title="Tambah Pemasukan"
-          isOpen={isAddDrawerOpen}
-          onOpenChange={(open) => {
-            setIsAddDrawerOpen(open);
-            if (!open) {
-              // Reset form submitted state when drawer closes
-              setIsFormSubmitted(false);
-            }
-          }}
-          triggerButton={null} // No trigger button, we control it externally
-          submitButton={
-            <Button type="submit" form="income-form" isLoading={isLoading}>
-              Simpan
-            </Button>
-          }
-        >
-          <IncomeForm id="income-form" onSubmit={handleCreateIncome} />
-        </FormDrawer>
+        <div className="mt-4">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onKeyDown={handleSearchKeyDown}
+            placeholder="Cari pemasukan..."
+            className="max-w-sm"
+          />
+        </div>
 
         <FormDrawer
           isDone={isFormSubmitted}
@@ -280,7 +364,6 @@ export const IncomePage = () => {
           onOpenChange={(open) => {
             setIsEditDrawerOpen(open);
             if (!open) {
-              // Reset form submitted state when drawer closes
               setIsFormSubmitted(false);
             }
           }}
@@ -296,17 +379,17 @@ export const IncomePage = () => {
               key={`edit-income-${selectedIncome.id}`}
               id="income-edit-form"
               onSubmit={handleUpdateIncome}
-              defaultValues={{
+              isLoading={isLoading}
+              initialValues={{
                 amount: selectedIncome.amount,
-                description: selectedIncome.description,
-                category: selectedIncome.category,
-                date: selectedIncome.date
+                category: selectedIncome.category_id || selectedIncome.category,
+                date: new Date(selectedIncome.date).toISOString().split('T')[0],
+                description: selectedIncome.description
               }}
             />
           )}
         </FormDrawer>
 
-        {/* Delete Income Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -344,7 +427,22 @@ export const IncomePage = () => {
         </AlertDialog>
 
         <div className="mt-8">
-          <Table data={incomes} columns={columns} />
+          <Table
+            data={incomes}
+            columns={columns}
+            sorting={{
+              state: sorting,
+              onSort: handleSort
+            }}
+            pagination={
+              pagination && {
+                currentPage: pagination.current_page,
+                totalPages: pagination.total_pages,
+                rootUrl: '/income'
+              }
+            }
+            isLoading={isLoading}
+          />
         </div>
       </ContentLayout>
     </DashboardLayout>

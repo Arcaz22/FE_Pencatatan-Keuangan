@@ -6,7 +6,9 @@ import {
   LoginValues,
   RegisterValues,
   Category,
-  CategoryQueryParams
+  CategoryQueryParams,
+  QueryParams,
+  Income
 } from '@/types/api';
 import { env } from '@/config/env';
 
@@ -200,7 +202,24 @@ export const categoryApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    // Change return type to void since 204 has no content
     await api.delete<void>(`/categories/${id}`);
+  }
+};
+
+export const incomeApi = {
+  getAll: async (params?: QueryParams): Promise<ApiResponse<Income[]>> => {
+    return api.get<ApiResponse<Income[]>>('/incomes/all', params);
+  },
+
+  create: async (data: Omit<Income, 'id'>): Promise<ApiResponse<Income>> => {
+    return api.post<ApiResponse<Income>>('/incomes/create', data);
+  },
+
+  update: async (id: string, data: Partial<Omit<Income, 'id'>>): Promise<ApiResponse<Income>> => {
+    return api.put<ApiResponse<Income>>(`/incomes/${id}`, data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete<void>(`/incomes/${id}`);
   }
 };

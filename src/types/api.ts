@@ -75,19 +75,17 @@ export type CategoryFormValues = {
   description: string;
 };
 
-// Base type for transaction forms
 type BaseTransactionFormValues = {
   amount: number;
   description: string;
   category: string;
+  category_id?: string;
   date: string;
 };
 
-// Income types
 export type Income = BaseEntity & BaseTransactionFormValues;
 export type IncomeFormValues = BaseTransactionFormValues;
 
-// Expense types
 export type Expense = BaseEntity & BaseTransactionFormValues;
 export type ExpenseFormValues = BaseTransactionFormValues;
 
