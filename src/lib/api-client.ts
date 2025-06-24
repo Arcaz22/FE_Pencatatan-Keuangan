@@ -123,26 +123,16 @@ export const api = {
       headers
     });
 
-    //     const result = await response.json();
-
-    //     if (!response.ok) {
-    //       throw new Error(result.message || 'Request failed');
-    //     }
-
-    //     return result;
-    //   }
 
     if (!response.ok) {
       try {
         const errorResult = await response.json();
         throw new Error(errorResult.message || 'Delete request failed');
       } catch {
-        // If parsing fails, throw a generic error
         throw new Error(`Delete request failed with status ${response.status}`);
       }
     }
 
-    // Handle 204 No Content response
     if (response.status === 204) {
       return { success: true } as T;
     }
@@ -223,3 +213,21 @@ export const incomeApi = {
     await api.delete<void>(`/incomes/${id}`);
   }
 };
+
+export const expenseApi = {
+    getAll: async (params?: QueryParams): Promise<ApiResponse<Income[]>> => {
+        return api.get<ApiResponse<Income[]>>('/expenses/all', params);
+    },
+
+    create: async (data: Omit<Income, 'id'>): Promise<ApiResponse<Income>> => {
+        return api.post<ApiResponse<Income>>('/expenses/create', data);
+    },
+
+    update: async (id: string, data: Partial<Omit<Income, 'id'>>): Promise<ApiResponse<Income>> => {
+        return api.put<ApiResponse<Income>>(`/expenses/${id}`, data);
+    },
+
+    delete: async (id: string): Promise<void> => {
+        await api.delete<void>(`/expenses/${id}`);
+    }
+}

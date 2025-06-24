@@ -1,79 +1,149 @@
+import { useEffect, useState } from 'react';
 import { Form, Input, Select, Textarea } from '@/components/ui/form';
-import { expenseCategories } from '@/lib/mock-data';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { formatCurrency } from '@/utils/currency-utils';
+import { ExpenseFormValues } from '@/types/api';
+import { useAppDispatch, useAppSelector } from '@/stores/hooks';
+import {
+  fetchCategories,
+  selectCategories,
+  selectCategoryLoading
+} from '@/stores/slices/categorySlice';
 
-type ExpenseFormValues = {
-  amount: number;
-  description: string;
-  category: string;
-  date: string;
-};
+const schema = z.object({
+  amount: z.number().min(1, 'Jumlah wajib diisi'),
+  description: z.string().min(1, 'Keterangan wajib diisi'),
+  category: z.string().min(1, 'Kategori wajib diisi'),
+  date: z.string().min(1, 'Tanggal wajib diisi')
+});
 
 type ExpenseFormProps = {
-  id?: string;
-  onSubmit: (values: ExpenseFormValues) => void;
-  isLoading?: boolean;
-  defaultValues?: ExpenseFormValues;
+    onSubmit: (values: ExpenseFormValues) => void;
+    isLoading?: boolean;
+    initialValues?: Partial<ExpenseFormValues>;
+    id?: string;
 };
 
-export const ExpenseForm = ({ onSubmit, id = 'expense-form', defaultValues }: ExpenseFormProps) => {
+export const ExpenseForm = ({
+    onSubmit,
+    isLoading = false,
+    initialValues,
+    id = 'expense-form',
+}: ExpenseFormProps) => {
+  const dispatch = useAppDispatch();
+  const categories = useAppSelector(selectCategories);
+  const categoriesLoading = useAppSelector(selectCategoryLoading);
+  const [expenseCategories, setExpenseCategories] = useState<{ label: string; value: string }[]>([]);
+  const [formattedAmount, setFormattedAmount] = useState<string>('');
+
+  useEffect(() => {
+    dispatch(
+      fetchCategories({
+        type: 'expense',
+        limit: 100
+      })
+    );
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (initialValues?.amount) {
+      setFormattedAmount(formatCurrency(initialValues.amount));
+    }
+  }, [initialValues?.amount]);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      const formattedCategories = categories.map((category) => ({
+        label: category.name,
+        value: category.id
+      }));
+
+      if (!initialValues?.category && !initialValues?.category_id) {
+        formattedCategories.unshift({ label: 'Pilih kategori', value: '' });
+      }
+
+      setExpenseCategories(formattedCategories);
+    }
+  }, [categories, initialValues?.category, initialValues?.category_id]);
+
   const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numericValue = value.replace(/[^0-9]/g, '');
 
     if (numericValue) {
-      e.target.value = formatCurrency(Number(numericValue));
+      const formatted = formatCurrency(Number(numericValue));
+      setFormattedAmount(formatted);
+      e.target.value = formatted;
+    } else {
+      setFormattedAmount('');
+      e.target.value = '';
     }
   };
+
+  const handleSubmit = async (values: ExpenseFormValues) => {
+    const formattedValues: ExpenseFormValues = {
+      ...values,
+      amount: Number(values.amount.toString().replace(/[^0-9]/g, '')),
+      date: new Date(values.date).toISOString()
+    };
+
+    await onSubmit(formattedValues);
+  };
+
   return (
     <Form<ExpenseFormValues>
-      onSubmit={onSubmit}
-      id={id}
-      options={{
-        defaultValues: defaultValues
-      }}
-      resolver={undefined}
-    >
-      {({ register, formState: { errors } }) => (
+        id={id} onSubmit={handleSubmit} resolver={zodResolver(schema)}>
+      {({ register, formState }) => (
         <>
           <Input
             label="Jumlah"
             type="text"
-            error={errors.amount}
+            error={formState.errors.amount}
             registration={register('amount', {
+              setValueAs: (value: string) => {
+                return Number(value.replace(/[^\d]/g, ''));
+              },
               required: 'Jumlah wajib diisi',
               min: {
                 value: 1,
                 message: 'Jumlah harus lebih dari 0'
               },
-              setValueAs: (value: string) => {
-                return Number(value.replace(/[^0-9]/g, ''));
-              }
             })}
             onChange={handleNumberInput}
+            disabled={isLoading}
+            value={formattedAmount}
           />
           <Select
             label="Kategori"
             options={expenseCategories}
-            error={errors.category}
+            error={formState.errors.category}
             registration={register('category', {
-              required: 'Kategori wajib diisi'
+              required: 'Kategori wajib diisi',
+              value: initialValues?.category || ''
             })}
+            disabled={isLoading || categoriesLoading}
+            placeholder={categoriesLoading ? 'Memuat kategori...' : 'Pilih kategori'}
           />
           <Input
             label="Tanggal"
             type="date"
-            error={errors.date}
+            error={formState.errors.date}
             registration={register('date', {
-              required: 'Tanggal wajib diisi'
+              value: initialValues?.date
+                ? new Date(initialValues.date).toISOString().split('T')[0]
+                : ''
             })}
+            disabled={isLoading}
           />
           <Textarea
             label="Keterangan"
-            error={errors.description}
+            error={formState.errors.description}
             registration={register('description', {
-              required: 'Keterangan wajib diisi'
+              required: 'Keterangan wajib diisi',
+              value: initialValues?.description || ''
             })}
+            disabled={isLoading}
           />
         </>
       )}
