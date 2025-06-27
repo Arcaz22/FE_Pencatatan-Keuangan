@@ -4,6 +4,7 @@ import notificationReducer from './slices/notificationSlice';
 import categoryReducer from './slices/categorySlice';
 import incomeReducer from './slices/incomeSlice';
 import expenseReducer from './slices/expenseSlice';
+import budgetReducer from './slices/budgetSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     notification: notificationReducer,
     category: categoryReducer,
     income: incomeReducer,
-    expense: expenseReducer
+    expense: expenseReducer,
+    budget: budgetReducer
   }
 });
 

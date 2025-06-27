@@ -182,4 +182,5 @@ export default expenseSlice.reducer;
 export const selectExpenses = (state: { expense: ExpenseState }) => state.expense.expenses;
 export const selectExpenseLoading = (state: { expense: ExpenseState }) => state.expense.isLoading;
 export const selectExpenseError = (state: { expense: ExpenseState }) => state.expense.error;
-export const selectExpensePagination = (state: { expense: ExpenseState }) => state.expense.pagination;
+export const selectExpensePagination = (state: { expense: ExpenseState }) =>
+  state.expense.pagination;

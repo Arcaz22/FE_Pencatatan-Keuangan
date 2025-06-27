@@ -8,7 +8,9 @@ import {
   Category,
   CategoryQueryParams,
   QueryParams,
-  Income
+  Income,
+  Expense,
+  Budget
 } from '@/types/api';
 import { env } from '@/config/env';
 
@@ -123,7 +125,6 @@ export const api = {
       headers
     });
 
-
     if (!response.ok) {
       try {
         const errorResult = await response.json();
@@ -215,19 +216,37 @@ export const incomeApi = {
 };
 
 export const expenseApi = {
-    getAll: async (params?: QueryParams): Promise<ApiResponse<Income[]>> => {
-        return api.get<ApiResponse<Income[]>>('/expenses/all', params);
-    },
+  getAll: async (params?: QueryParams): Promise<ApiResponse<Expense[]>> => {
+    return api.get<ApiResponse<Expense[]>>('/expenses/all', params);
+  },
 
-    create: async (data: Omit<Income, 'id'>): Promise<ApiResponse<Income>> => {
-        return api.post<ApiResponse<Income>>('/expenses/create', data);
-    },
+  create: async (data: Omit<Expense, 'id'>): Promise<ApiResponse<Expense>> => {
+    return api.post<ApiResponse<Expense>>('/expenses/create', data);
+  },
 
-    update: async (id: string, data: Partial<Omit<Income, 'id'>>): Promise<ApiResponse<Income>> => {
-        return api.put<ApiResponse<Income>>(`/expenses/${id}`, data);
-    },
+  update: async (id: string, data: Partial<Omit<Expense, 'id'>>): Promise<ApiResponse<Expense>> => {
+    return api.put<ApiResponse<Expense>>(`/expenses/${id}`, data);
+  },
 
-    delete: async (id: string): Promise<void> => {
-        await api.delete<void>(`/expenses/${id}`);
-    }
-}
+  delete: async (id: string): Promise<void> => {
+    await api.delete<void>(`/expenses/${id}`);
+  }
+};
+
+export const budgetApi = {
+  getAll: async (params?: QueryParams): Promise<ApiResponse<Budget[]>> => {
+    return api.get<ApiResponse<Budget[]>>('/budgets/all', params);
+  },
+
+  create: async (data: Omit<Budget, 'id'>): Promise<ApiResponse<Budget>> => {
+    return api.post<ApiResponse<Budget>>('/budgets/create', data);
+  },
+
+  update: async (id: string, data: Partial<Omit<Budget, 'id'>>): Promise<ApiResponse<Budget>> => {
+    return api.put<ApiResponse<Budget>>(`/budgets/${id}`, data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete<void>(`/budgets/${id}`);
+  }
+};

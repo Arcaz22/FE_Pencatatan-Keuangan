@@ -319,134 +319,134 @@ export const ExpensePage = () => {
   );
 
   return (
-      <DashboardLayout>
-        <ContentLayout>
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-[hsl(var(--text-primary))]">
-              Daftar Pengeluaran
-            </h1>
-
-            <FormDrawer
-              isDone={isFormSubmitted}
-              title="Tambah Pengeluaran"
-              isOpen={isAddDrawerOpen}
-              onOpenChange={(open) => {
-                setIsAddDrawerOpen(open);
-                if (!open) {
-                  setIsFormSubmitted(false);
-                }
-              }}
-              triggerButton={<Button icon={<Plus className="size-4" />}>Tambah Pengeluaran</Button>}
-              submitButton={
-                <Button type="submit" form="expense-form" isLoading={isLoading}>
-                  Simpan
-                </Button>
-              }
-            >
-              <ExpenseForm onSubmit={handleCreateExpense} isLoading={isLoading} />
-            </FormDrawer>
-          </div>
-
-          <div className="mt-4">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onKeyDown={handleSearchKeyDown}
-              placeholder="Cari pengeluaran..."
-              className="max-w-sm"
-            />
-          </div>
+    <DashboardLayout>
+      <ContentLayout>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-[hsl(var(--text-primary))]">
+            Daftar Pengeluaran
+          </h1>
 
           <FormDrawer
             isDone={isFormSubmitted}
-            title="Edit Pengeluaran"
-            isOpen={isEditDrawerOpen}
+            title="Tambah Pengeluaran"
+            isOpen={isAddDrawerOpen}
             onOpenChange={(open) => {
-              setIsEditDrawerOpen(open);
+              setIsAddDrawerOpen(open);
               if (!open) {
                 setIsFormSubmitted(false);
               }
             }}
-            triggerButton={null}
+            triggerButton={<Button icon={<Plus className="size-4" />}>Tambah Pengeluaran</Button>}
             submitButton={
-              <Button type="submit" form="expense-edit-form" isLoading={isLoading}>
-                Update
+              <Button type="submit" form="expense-form" isLoading={isLoading}>
+                Simpan
               </Button>
             }
           >
-            {selectedExpense && (
-              <ExpenseForm
-                key={`edit-expense-${selectedExpense.id}`}
-                id="expense-edit-form"
-                onSubmit={handleUpdateExpense}
-                isLoading={isLoading}
-                initialValues={{
-                  amount: selectedExpense.amount,
-                  category: selectedExpense.category_id || selectedExpense.category,
-                  date: new Date(selectedExpense.date).toISOString().split('T')[0],
-                  description: selectedExpense.description
-                }}
-              />
-            )}
+            <ExpenseForm onSubmit={handleCreateExpense} isLoading={isLoading} />
           </FormDrawer>
+        </div>
 
-          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Hapus Pengeluaran</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {selectedExpense ? (
-                    <>
-                      Apakah anda yakin ingin menghapus pengeluaran{' '}
-                      <strong>"{selectedExpense.description}"</strong> dengan jumlah{' '}
-                      <strong>Rp {selectedExpense.amount.toLocaleString('id-ID')}</strong>?
-                    </>
-                  ) : (
-                    'Apakah anda yakin ingin menghapus pengeluran ini?'
-                  )}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteExpense}
-                  disabled={isLoading}
-                  className="bg-[hsl(var(--bg-destructive))] text-[hsl(var(--text-white))]"
-                >
-                  {isLoading ? (
-                    <>
-                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                      Menghapus...
-                    </>
-                  ) : (
-                    'Hapus'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <div className="mt-4">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onKeyDown={handleSearchKeyDown}
+            placeholder="Cari pengeluaran..."
+            className="max-w-sm"
+          />
+        </div>
 
-          <div className="mt-8">
-            <Table
-              data={expenses}
-              columns={columns}
-              sorting={{
-                state: sorting,
-                onSort: handleSort
-              }}
-              pagination={
-                pagination && {
-                  currentPage: pagination.current_page,
-                  totalPages: pagination.total_pages,
-                  rootUrl: '/expense'
-                }
-              }
+        <FormDrawer
+          isDone={isFormSubmitted}
+          title="Edit Pengeluaran"
+          isOpen={isEditDrawerOpen}
+          onOpenChange={(open) => {
+            setIsEditDrawerOpen(open);
+            if (!open) {
+              setIsFormSubmitted(false);
+            }
+          }}
+          triggerButton={null}
+          submitButton={
+            <Button type="submit" form="expense-edit-form" isLoading={isLoading}>
+              Update
+            </Button>
+          }
+        >
+          {selectedExpense && (
+            <ExpenseForm
+              key={`edit-expense-${selectedExpense.id}`}
+              id="expense-edit-form"
+              onSubmit={handleUpdateExpense}
               isLoading={isLoading}
+              initialValues={{
+                amount: selectedExpense.amount,
+                category: selectedExpense.category_id || selectedExpense.category,
+                date: new Date(selectedExpense.date).toISOString().split('T')[0],
+                description: selectedExpense.description
+              }}
             />
-          </div>
-        </ContentLayout>
-      </DashboardLayout>
-    );
-  };
+          )}
+        </FormDrawer>
+
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Hapus Pengeluaran</AlertDialogTitle>
+              <AlertDialogDescription>
+                {selectedExpense ? (
+                  <>
+                    Apakah anda yakin ingin menghapus pengeluaran{' '}
+                    <strong>"{selectedExpense.description}"</strong> dengan jumlah{' '}
+                    <strong>Rp {selectedExpense.amount.toLocaleString('id-ID')}</strong>?
+                  </>
+                ) : (
+                  'Apakah anda yakin ingin menghapus pengeluran ini?'
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteExpense}
+                disabled={isLoading}
+                className="bg-[hsl(var(--bg-destructive))] text-[hsl(var(--text-white))]"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                    Menghapus...
+                  </>
+                ) : (
+                  'Hapus'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <div className="mt-8">
+          <Table
+            data={expenses}
+            columns={columns}
+            sorting={{
+              state: sorting,
+              onSort: handleSort
+            }}
+            pagination={
+              pagination && {
+                currentPage: pagination.current_page,
+                totalPages: pagination.total_pages,
+                rootUrl: '/expense'
+              }
+            }
+            isLoading={isLoading}
+          />
+        </div>
+      </ContentLayout>
+    </DashboardLayout>
+  );
+};
 
 export default ExpensePage;

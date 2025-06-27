@@ -75,6 +75,7 @@ export type CategoryFormValues = {
   description: string;
 };
 
+// Transaction types
 type BaseTransactionFormValues = {
   amount: number;
   description: string;
@@ -88,6 +89,25 @@ export type IncomeFormValues = BaseTransactionFormValues;
 
 export type Expense = BaseEntity & BaseTransactionFormValues;
 export type ExpenseFormValues = BaseTransactionFormValues;
+
+// Budget types
+export type Budget = BaseEntity & {
+  amount: number;
+  category: string;
+  category_id?: string;
+  effective_from: string;
+  effective_to: string;
+  is_active: boolean;
+};
+
+export type BudgetFormValues = {
+  amount: number;
+  category: string;
+  category_id?: string;
+  effective_from: string;
+  effective_to: string;
+  is_active?: boolean;
+};
 
 // Statistics types
 export type StatsData = {
@@ -110,27 +130,3 @@ export type PieChartData = {
   name: string;
   value: number;
 };
-
-// Budget types
-export type BudgetData = {
-  date: string;
-  amount: number;
-  budget: number;
-};
-
-export type Budget = BaseEntity & {
-  categoryId: string;
-  amount: number;
-  spent: number;
-  month: number;
-  year: number;
-};
-
-export type CreateBudgetDTO = {
-  categoryId: string;
-  amount: number;
-  month: number;
-  year: number;
-};
-
-export type UpdateBudgetDTO = Partial<CreateBudgetDTO>;

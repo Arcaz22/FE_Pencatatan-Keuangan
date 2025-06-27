@@ -19,22 +19,24 @@ const schema = z.object({
 });
 
 type ExpenseFormProps = {
-    onSubmit: (values: ExpenseFormValues) => void;
-    isLoading?: boolean;
-    initialValues?: Partial<ExpenseFormValues>;
-    id?: string;
+  onSubmit: (values: ExpenseFormValues) => void;
+  isLoading?: boolean;
+  initialValues?: Partial<ExpenseFormValues>;
+  id?: string;
 };
 
 export const ExpenseForm = ({
-    onSubmit,
-    isLoading = false,
-    initialValues,
-    id = 'expense-form',
+  onSubmit,
+  isLoading = false,
+  initialValues,
+  id = 'expense-form'
 }: ExpenseFormProps) => {
   const dispatch = useAppDispatch();
   const categories = useAppSelector(selectCategories);
   const categoriesLoading = useAppSelector(selectCategoryLoading);
-  const [expenseCategories, setExpenseCategories] = useState<{ label: string; value: string }[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<{ label: string; value: string }[]>(
+    []
+  );
   const [formattedAmount, setFormattedAmount] = useState<string>('');
 
   useEffect(() => {
@@ -92,8 +94,7 @@ export const ExpenseForm = ({
   };
 
   return (
-    <Form<ExpenseFormValues>
-        id={id} onSubmit={handleSubmit} resolver={zodResolver(schema)}>
+    <Form<ExpenseFormValues> id={id} onSubmit={handleSubmit} resolver={zodResolver(schema)}>
       {({ register, formState }) => (
         <>
           <Input
@@ -108,7 +109,7 @@ export const ExpenseForm = ({
               min: {
                 value: 1,
                 message: 'Jumlah harus lebih dari 0'
-              },
+              }
             })}
             onChange={handleNumberInput}
             disabled={isLoading}

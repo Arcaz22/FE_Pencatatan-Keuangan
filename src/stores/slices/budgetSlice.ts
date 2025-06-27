@@ -1,16 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { incomeApi } from '@/lib/api-client';
-import type { Income, QueryParams, IncomeFormValues, Meta } from '@/types/api';
+import { budgetApi } from '@/lib/api-client';
+import type { Budget, QueryParams, BudgetFormValues, Meta } from '@/types/api';
 
-interface IncomeState {
-  incomes: Income[];
+interface BudgetState {
+  budgets: Budget[];
   isLoading: boolean;
   error: string | null;
   pagination: Meta;
 }
 
-const initialState: IncomeState = {
-  incomes: [],
+const initialState: BudgetState = {
+  budgets: [],
   isLoading: false,
   error: null,
   pagination: {
@@ -21,11 +21,11 @@ const initialState: IncomeState = {
   }
 };
 
-export const fetchIncomes = createAsyncThunk(
-  'income/fetchAll',
+export const fetchBudgets = createAsyncThunk(
+  'budget/fetchAll',
   async (params: QueryParams, { rejectWithValue }) => {
     try {
-      const response = await incomeApi.getAll(params);
+      const response = await budgetApi.getAll(params);
       return {
         data: response.data,
         pagination: response.pagination
@@ -34,16 +34,16 @@ export const fetchIncomes = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Failed to fetch income data');
+      return rejectWithValue('Failed to fetch budget data');
     }
   }
 );
 
-export const createIncome = createAsyncThunk(
-  'income/create',
-  async (data: IncomeFormValues, { rejectWithValue }) => {
+export const createBudget = createAsyncThunk(
+  'budget/create',
+  async (data: BudgetFormValues, { rejectWithValue }) => {
     try {
-      const response = await incomeApi.create(data);
+      const response = await budgetApi.create(data);
       return {
         data: response.data,
         message: response.message
@@ -52,16 +52,16 @@ export const createIncome = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Failed to create income');
+      return rejectWithValue('Failed to create budget');
     }
   }
 );
 
-export const updateIncome = createAsyncThunk(
-  'income/update',
-  async ({ id, data }: { id: string; data: Partial<IncomeFormValues> }, { rejectWithValue }) => {
+export const updateBudget = createAsyncThunk(
+  'budget/update',
+  async ({ id, data }: { id: string; data: Partial<BudgetFormValues> }, { rejectWithValue }) => {
     try {
-      const response = await incomeApi.update(id, data);
+      const response = await budgetApi.update(id, data);
       return {
         data: response.data,
         message: response.message
@@ -70,94 +70,91 @@ export const updateIncome = createAsyncThunk(
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-      return rejectWithValue('Failed to update income');
+      return rejectWithValue('Failed to update budget');
     }
   }
 );
 
-export const deleteIncome = createAsyncThunk(
-  'income/delete',
+export const deleteBudget = createAsyncThunk(
+  'budget/delete',
   async (id: string, { rejectWithValue }) => {
     try {
-      await incomeApi.delete(id);
+      await budgetApi.delete(id);
       return {
         id,
-        message: 'Income berhasil dihapus'
+        message: 'Budget deleted successfully'
       };
     } catch (err) {
-      console.error('Error deleting income:', err);
-
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
-
-      return rejectWithValue('Gagal menghapus pendapatan');
+      return rejectWithValue('Failed to delete budget');
     }
   }
 );
 
-const incomeSlice = createSlice({
-  name: 'income',
+const budgetSlice = createSlice({
+  name: 'budget',
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
     clearCategories: (state) => {
-      state.incomes = [];
+      state.budgets = [];
       state.pagination = initialState.pagination;
     }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchIncomes.pending, (state) => {
+      .addCase(fetchBudgets.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchIncomes.fulfilled, (state, action) => {
+      .addCase(fetchBudgets.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.incomes = action.payload.data;
+        state.budgets = action.payload.data;
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
         state.error = null;
       })
-      .addCase(fetchIncomes.rejected, (state, action) => {
+      .addCase(fetchBudgets.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(createIncome.pending, (state) => {
+      .addCase(createBudget.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(createIncome.fulfilled, (state) => {
+      .addCase(createBudget.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
-      .addCase(createIncome.rejected, (state, action) => {
+      .addCase(createBudget.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(updateIncome.pending, (state) => {
+      .addCase(updateBudget.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(updateIncome.fulfilled, (state) => {
+      .addCase(updateBudget.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
-      .addCase(updateIncome.rejected, (state, action) => {
+      .addCase(updateBudget.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
-      .addCase(deleteIncome.fulfilled, (state, action) => {
+      .addCase(deleteBudget.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = null;
 
-        state.incomes = state.incomes.filter((cat) => cat.id !== action.payload.id);
+        state.budgets = state.budgets.filter((cat) => cat.id !== action.payload.id);
 
         if (state.pagination.total_records > 0) {
           state.pagination.total_records -= 1;
@@ -170,17 +167,17 @@ const incomeSlice = createSlice({
           state.pagination.current_page = state.pagination.total_pages;
         }
       })
-      .addCase(deleteIncome.rejected, (state, action) => {
+      .addCase(deleteBudget.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });
   }
 });
 
-export const { clearError, clearCategories } = incomeSlice.actions;
-export default incomeSlice.reducer;
+export const { clearError, clearCategories } = budgetSlice.actions;
+export default budgetSlice.reducer;
 
-export const selectIncomes = (state: { income: IncomeState }) => state.income.incomes;
-export const selectIncomeLoading = (state: { income: IncomeState }) => state.income.isLoading;
-export const selectIncomeError = (state: { income: IncomeState }) => state.income.error;
-export const selectIncomePagination = (state: { income: IncomeState }) => state.income.pagination;
+export const selectBudgets = (state: { budget: BudgetState }) => state.budget.budgets;
+export const selectBudgetLoading = (state: { budget: BudgetState }) => state.budget.isLoading;
+export const selectBudgetError = (state: { budget: BudgetState }) => state.budget.error;
+export const selectBudgetPagination = (state: { budget: BudgetState }) => state.budget.pagination;
